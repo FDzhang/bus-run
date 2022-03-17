@@ -79,8 +79,14 @@ public class DemoApplication {
 //        }
         System.out.println("Finished all");
 
+
+
         for (Bus bus : busList) {
             bus.printRunLog();
+        }
+        System.err.println("公交车(NAME)\t总载客人数\t总运行时间(分钟)\t总行驶时间(分钟)");
+        for (Bus bus : busList) {
+            System.err.println(bus.toString());
         }
     }
 

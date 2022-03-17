@@ -2,7 +2,7 @@ package com.example.busrun.demo.service;
 
 import com.example.busrun.demo.constant.BusConstant;
 import com.example.busrun.demo.entity.*;
-import com.example.busrun.demo.utils.RandomUtils;
+import com.example.busrun.demo.utils.RandomUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -48,17 +48,12 @@ public class BusService implements Runnable {
             BusSite curBusSite = route.getBusSiteMap().get(bus.getSiteCode());
             RoadSection roadSection = route.getRoadSectionMap().get(bus.getSiteCode());
 
-            if (curBusSite == null || roadSection == null) {
-                System.err.println(bus);
-                return;
-            }
-
             // 入站日志
             if (!curBusSite.getCode().equals(route.getStartSiteCode())) {
                 bus.enterSiteRunLog(curBusSite.getCode().equals(route.getEndSiteCode()));
             }
             // 概率性故障
-            if (RandomUtils.busFaultRandom()) {
+            if (RandomUtil.busFaultRandom()) {
                 // 故障乘客下车
                 List<Passenger> faultOffPassengers = bus.faultOffPassengers();
                 curBusSite.addPassengers(faultOffPassengers);
@@ -79,7 +74,7 @@ public class BusService implements Runnable {
                 // 上下车时间
                 bus.setTime(bus.getTime() + BusConstant.UP_OFF_TIME);
                 // 添加一个随机时间
-                bus.setTime(bus.getTime() + RandomUtils.driveTimeRandom());
+                bus.setTime(bus.getTime() + RandomUtil.driveTimeRandom());
 
                 // 终点站转向
                 if (curBusSite.getCode().equals(route.getEndSiteCode())) {
@@ -87,7 +82,8 @@ public class BusService implements Runnable {
                     bus.setTime(bus.getTime() + BusConstant.CYCLE);
                 } else {
                     // 下一站的预计行程时间
-                    bus.setTime(bus.getTime() + roadSection.getDistance());
+                    bus.setTime(bus.getTime() + roadSection.getDistance() * 60);
+                    bus.setSiteCode(roadSection.getNextSite());
                 }
             }
         }

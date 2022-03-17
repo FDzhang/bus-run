@@ -8,7 +8,7 @@ import java.util.Random;
  * @author : zxq
  * @create : 2022/3/17 19:11
  */
-public class RandomUtils {
+public class RandomUtil {
 
     /**
      * 行驶时间的随机误差（秒） ， 0 or 1 分钟

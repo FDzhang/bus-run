@@ -1,6 +1,7 @@
 package com.example.busrun.demo.entity;
 
 import com.example.busrun.demo.constant.BusStatusEnum;
+import com.example.busrun.demo.utils.TimeUtil;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -139,7 +140,7 @@ public class Bus {
             action = "抵达终点站";
             totalDriveTime += (time.intValue() - outSiteTime);
         } else {
-            action = String.format("到达 %s 站", this.siteCode);
+            action = String.format("到达 %02d 站", this.siteCode);
         }
         busRunLogList.add(new BusRunLog(this.time, action));
     }
@@ -150,7 +151,7 @@ public class Bus {
     public void outSiteRunLog(boolean checkStart, Integer offNumber, Integer upNumber) {
         String action;
         if (checkStart) {
-            action = String.format("从 %s 站发车，乘客 %d 人", this.siteCode, upNumber);
+            action = String.format("从 %02d 站发车，乘客 %d 人", this.siteCode, upNumber);
             this.outSiteTime = time.intValue();
         } else {
             action = String.format("下客 %d 人，上客 %d 人，继续出发", upNumber, offNumber);
@@ -162,16 +163,22 @@ public class Bus {
      * 故障
      */
     public void faultRunLog(Integer pNumber) {
-        String action = String.format("在 %s 站故障，下客 %d 人", this.siteCode, pNumber);
+        String action = String.format("在 %02d 站故障，下客 %d 人", this.siteCode, pNumber);
         busRunLogList.add(new BusRunLog(this.time, action));
     }
 
     public void printRunLog() {
-        System.err.println("公交车：" + this.name);
+        System.err.println("公交车 " + this.name);
         System.err.println("时间 \t 动作");
         for (BusRunLog busRunLog : busRunLogList) {
-            System.err.println(busRunLog.getTime() + " \t " + busRunLog.getAction());
+            System.err.println(TimeUtil.long2TimeStr(busRunLog.getTime()) + " \t " + busRunLog.getAction());
         }
         System.err.println();
+    }
+
+    @Override
+    public String toString() {
+        // 公交车(NAME) 总载客人数 总运行时间(分钟) 总行驶时间(分钟)
+        return String.format("%10s\t%10s\t%10s\t%10s", this.name, this.totalPassengers, this.totalRunningTime / 60, this.totalDriveTime / 60);
     }
 }
