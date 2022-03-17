@@ -1,6 +1,5 @@
 package com.example.busrun.demo;
 
-import com.example.busrun.demo.constant.BusSiteTypeEnum;
 import com.example.busrun.demo.entity.*;
 import com.example.busrun.demo.service.BusService;
 import com.example.busrun.demo.service.SiteService;
@@ -81,7 +80,7 @@ public class DemoApplication {
         System.out.println("Finished all");
 
         for (Bus bus : busList) {
-            System.err.println(bus);
+            bus.printRunLog();
         }
     }
 
@@ -111,8 +110,6 @@ public class DemoApplication {
         for (int i = 1; i <= 15; i++) {
             busSites.put(i, new BusSite(i));
         }
-        busSites.get(1).setSiteType(BusSiteTypeEnum.END);
-        busSites.get(15).setSiteType(BusSiteTypeEnum.END);
         return busSites;
     }
 
@@ -132,13 +129,19 @@ public class DemoApplication {
         roadSectionMap.put(12, new RoadSection(12, 13, 3));
         roadSectionMap.put(13, new RoadSection(13, 14, 6));
         roadSectionMap.put(14, new RoadSection(14, 15, 3));
-        return new Route(busSites, roadSectionMap);
+        roadSectionMap.put(15, new RoadSection(15, 15, 0));
+
+        Route route = new Route(busSites, roadSectionMap);
+        route.setStartSiteCode(1);
+        route.setEndSiteCode(15);
+        return route;
     }
 
 
     public static Route buildRouteB(Map<Integer, BusSite> busSites) {
         Map<Integer, RoadSection> roadSectionMap = new HashMap<>(16);
-        roadSectionMap.put(2,  new RoadSection(2, 1, 4));
+        roadSectionMap.put(1, new RoadSection(1, 1, 0));
+        roadSectionMap.put(2, new RoadSection(2, 1, 4));
         roadSectionMap.put(3, new RoadSection(3, 2, 7));
         roadSectionMap.put(4, new RoadSection(4, 3, 5));
         roadSectionMap.put(5, new RoadSection(5, 4, 6));
@@ -146,13 +149,16 @@ public class DemoApplication {
         roadSectionMap.put(7, new RoadSection(7, 6, 4));
         roadSectionMap.put(8, new RoadSection(8, 7, 5));
         roadSectionMap.put(9, new RoadSection(9, 8, 3));
-        roadSectionMap.put(10,new RoadSection(10, 9, 7));
+        roadSectionMap.put(10, new RoadSection(10, 9, 7));
         roadSectionMap.put(11, new RoadSection(11, 10, 4));
         roadSectionMap.put(12, new RoadSection(12, 11, 5));
         roadSectionMap.put(13, new RoadSection(13, 12, 4));
         roadSectionMap.put(14, new RoadSection(14, 13, 5));
         roadSectionMap.put(15, new RoadSection(15, 14, 4));
-        return new Route(busSites, roadSectionMap);
+        Route route = new Route(busSites, roadSectionMap);
+        route.setStartSiteCode(15);
+        route.setEndSiteCode(1);
+        return route;
     }
 
 

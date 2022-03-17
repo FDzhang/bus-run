@@ -1,6 +1,5 @@
 package com.example.busrun.demo.entity;
 
-import com.example.busrun.demo.constant.BusSiteTypeEnum;
 import com.example.busrun.demo.constant.BusStatusEnum;
 import lombok.Data;
 
@@ -134,9 +133,9 @@ public class Bus {
     /**
      * 入站日志
      */
-    public void enterSiteRunLog(BusSiteTypeEnum siteType) {
+    public void enterSiteRunLog(boolean checkEnd) {
         String action;
-        if (siteType.equals(BusSiteTypeEnum.END)) {
+        if (checkEnd) {
             action = "抵达终点站";
             totalDriveTime += (time.intValue() - outSiteTime);
         } else {
@@ -148,9 +147,9 @@ public class Bus {
     /**
      * 出站日志
      */
-    public void outSiteRunLog(BusSiteTypeEnum siteType, Integer offNumber, Integer upNumber) {
+    public void outSiteRunLog(boolean checkStart, Integer offNumber, Integer upNumber) {
         String action;
-        if (siteType.equals(BusSiteTypeEnum.END)) {
+        if (checkStart) {
             action = String.format("从 %s 站发车，乘客 %d 人", this.siteCode, upNumber);
             this.outSiteTime = time.intValue();
         } else {
@@ -165,5 +164,14 @@ public class Bus {
     public void faultRunLog(Integer pNumber) {
         String action = String.format("在 %s 站故障，下客 %d 人", this.siteCode, pNumber);
         busRunLogList.add(new BusRunLog(this.time, action));
+    }
+
+    public void printRunLog() {
+        System.err.println("公交车：" + this.name);
+        System.err.println("时间 \t 动作");
+        for (BusRunLog busRunLog : busRunLogList) {
+            System.err.println(busRunLog.getTime() + " \t " + busRunLog.getAction());
+        }
+        System.err.println();
     }
 }

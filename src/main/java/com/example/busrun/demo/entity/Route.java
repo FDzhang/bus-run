@@ -12,6 +12,17 @@ import java.util.Map;
  */
 @Data
 public class Route {
+
+    /**
+     * 起点
+     */
+    private Integer startSiteCode;
+
+    /**
+     * 终点
+     */
+    private Integer endSiteCode;
+
     /**
      * 站点编号，站点
      */

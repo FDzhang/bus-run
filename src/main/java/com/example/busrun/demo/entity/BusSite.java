@@ -1,6 +1,5 @@
 package com.example.busrun.demo.entity;
 
-import com.example.busrun.demo.constant.BusSiteTypeEnum;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -32,11 +31,6 @@ public class BusSite {
      * 站点编号
      */
     private Integer code;
-
-    /**
-     * 站点类型
-     */
-    private BusSiteTypeEnum siteType = BusSiteTypeEnum.NORMAL;
 
     /**
      * 站点当前的乘客
