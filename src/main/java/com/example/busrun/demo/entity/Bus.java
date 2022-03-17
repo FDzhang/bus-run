@@ -154,8 +154,9 @@ public class Bus {
             action = String.format("从 %02d 站发车，乘客 %d 人", this.siteCode, upNumber);
             this.outSiteTime = time.intValue();
         } else {
-            action = String.format("下客 %d 人，上客 %d 人，继续出发", upNumber, offNumber);
+            action = String.format("下客 %d 人，上客 %d 人，继续出发", offNumber, upNumber);
         }
+        action += " 当前车上人数：" + this.passengersMap.values().stream().mapToInt(List::size).sum();
         busRunLogList.add(new BusRunLog(this.time, action));
     }
 
