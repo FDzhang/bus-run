@@ -17,8 +17,14 @@ public class Passenger {
      */
     private Integer targetSite;
 
-    public Passenger(Integer curSite, Integer targetSite) {
+    /**
+     * 路线 （所在站点+目标站点决定路线）
+     */
+    private Integer routeCode;
+
+    public Passenger(Integer curSite, Integer targetSite, Integer routeCode) {
         this.curSite = curSite;
         this.targetSite = targetSite;
+        this.routeCode = routeCode;
     }
 }

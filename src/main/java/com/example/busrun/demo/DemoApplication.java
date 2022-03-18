@@ -39,10 +39,10 @@ public class DemoApplication {
 //                new ArrayBlockingQueue<>(QUEUE_CAPACITY),
 //                new ThreadPoolExecutor.CallerRunsPolicy());
 
-
-        Map<Integer, BusSite> busSites = buildBusSites();
-        Map<Integer, Route> routeMap = buildRoute(busSites);
-        List<Bus> busList = buildBusList(5, 5);
+        TimeClock siteClock = new TimeClock();
+        Map<Integer, BusSite> busSites = DemoApplication.buildBusSites(siteClock);
+        Map<Integer, Route> routeMap = DemoApplication.buildRoute(busSites);
+        List<Bus> busList = DemoApplication.buildBusList(5, 5);
         Long limit = 300 * 60L;
 
         System.err.println("init finish");
@@ -53,10 +53,12 @@ public class DemoApplication {
 //        busSiteExecutor.execute(new SiteService(timeClock, new ArrayList<>(busSites.values()), limit));
 
         while (timeClock.getTime().get() < limit) {
-            new SiteService(timeClock, new ArrayList<>(busSites.values()), limit).run();
+            new SiteService(timeClock, siteClock, new ArrayList<>(busSites.values())).run();
+
             for (Bus bus : busList) {
-                new BusService(timeClock, bus, routeMap, limit).run();
+                new BusService(timeClock, bus, routeMap).run();
             }
+
             timeClock.getTime().getAndIncrement();
             System.err.println(timeClock.getTime().get());
         }
@@ -80,7 +82,6 @@ public class DemoApplication {
         System.out.println("Finished all");
 
 
-
         for (Bus bus : busList) {
             bus.printRunLog();
         }
@@ -88,12 +89,17 @@ public class DemoApplication {
         for (Bus bus : busList) {
             System.err.println(bus.toString());
         }
+
+        System.err.println("站点(code)\t路线:人数...");
+        for (BusSite site : busSites.values()) {
+            System.err.println(site.toString());
+        }
     }
 
     private static Map<Integer, Route> buildRoute(Map<Integer, BusSite> busSites) {
         Map<Integer, Route> res = new HashMap<>();
-        res.put(0, buildRouteA(busSites));
-        res.put(1, buildRouteB(busSites));
+        res.put(0, DemoApplication.buildRouteA(busSites));
+        res.put(1, DemoApplication.buildRouteB(busSites));
         return res;
     }
 
@@ -111,10 +117,10 @@ public class DemoApplication {
     }
 
 
-    private static Map<Integer, BusSite> buildBusSites() {
+    private static Map<Integer, BusSite> buildBusSites(TimeClock time) {
         Map<Integer, BusSite> busSites = new HashMap<>(16);
         for (int i = 1; i <= 15; i++) {
-            busSites.put(i, new BusSite(i));
+            busSites.put(i, new BusSite(i, time));
         }
         return busSites;
     }

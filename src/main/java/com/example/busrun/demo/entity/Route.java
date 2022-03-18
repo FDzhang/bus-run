@@ -1,8 +1,8 @@
 package com.example.busrun.demo.entity;
 
+import com.example.busrun.demo.constant.BusSiteTypeEnum;
 import lombok.Data;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -39,5 +39,23 @@ public class Route {
     public Route(Map<Integer, BusSite> busSiteMap, Map<Integer, RoadSection> roadSectionMap) {
         this.busSiteMap = busSiteMap;
         this.roadSectionMap = roadSectionMap;
+    }
+
+    public BusSiteTypeEnum checkBusSiteType(int busSiteCode) {
+        if (this.startSiteCode == busSiteCode) {
+            return BusSiteTypeEnum.START;
+        } else if (this.endSiteCode == busSiteCode) {
+            return BusSiteTypeEnum.END;
+        } else {
+            return BusSiteTypeEnum.NORMAL;
+        }
+    }
+
+    public boolean isStart(int busSiteCode) {
+        return this.startSiteCode == busSiteCode;
+    }
+
+    public boolean isEnd(int busSiteCode) {
+        return this.endSiteCode == busSiteCode;
     }
 }

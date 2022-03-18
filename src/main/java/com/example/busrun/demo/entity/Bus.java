@@ -1,5 +1,6 @@
 package com.example.busrun.demo.entity;
 
+import com.example.busrun.demo.constant.BusSiteTypeEnum;
 import com.example.busrun.demo.constant.BusStatusEnum;
 import com.example.busrun.demo.utils.TimeUtil;
 import lombok.Data;
@@ -108,8 +109,6 @@ public class Bus {
         for (List<Passenger> p : passengersMap.values()) {
             res.addAll(p);
         }
-
-        totalRunningTime = time.intValue();
         this.busStatus = BusStatusEnum.FAULT;
         // 记录日志
         faultRunLog(res.size());
@@ -134,13 +133,18 @@ public class Bus {
     /**
      * 入站日志
      */
-    public void enterSiteRunLog(boolean checkEnd) {
+    public void enterSiteRunLog(BusSiteTypeEnum siteType) {
         String action;
-        if (checkEnd) {
+        if (BusSiteTypeEnum.END.equals(siteType)) {
             action = "抵达终点站";
             totalDriveTime += (time.intValue() - outSiteTime);
-        } else {
+            totalRunningTime = time.intValue();
+        } else if (BusSiteTypeEnum.NORMAL.equals(siteType)) {
             action = String.format("到达 %02d 站", this.siteCode);
+            totalDriveTime += (time.intValue() - outSiteTime);
+            totalRunningTime = time.intValue();
+        } else {
+            return;
         }
         busRunLogList.add(new BusRunLog(this.time, action));
     }
@@ -148,20 +152,25 @@ public class Bus {
     /**
      * 出站日志
      */
-    public void outSiteRunLog(boolean checkStart, Integer offNumber, Integer upNumber) {
+    public void outSiteRunLog(BusSiteTypeEnum siteType, Integer offNumber, Integer upNumber) {
         String action;
-        if (checkStart) {
+        if (BusSiteTypeEnum.START.equals(siteType)) {
             action = String.format("从 %02d 站发车，乘客 %d 人", this.siteCode, upNumber);
+            // 出站行驶
+            this.outSiteTime = time.intValue();
+        } else if (BusSiteTypeEnum.NORMAL.equals(siteType)) {
+            action = String.format("下客 %d 人，上客 %d 人，继续出发", offNumber, upNumber);
+            // 出站行驶
             this.outSiteTime = time.intValue();
         } else {
-            action = String.format("下客 %d 人，上客 %d 人，继续出发", offNumber, upNumber);
+            action = String.format("下客 %d 人，等待发车", offNumber);
         }
         action += " 当前车上人数：" + this.passengersMap.values().stream().mapToInt(List::size).sum();
         busRunLogList.add(new BusRunLog(this.time, action));
     }
 
     /**
-     * 故障
+     * 故障日志
      */
     public void faultRunLog(Integer pNumber) {
         String action = String.format("在 %02d 站故障，下客 %d 人", this.siteCode, pNumber);

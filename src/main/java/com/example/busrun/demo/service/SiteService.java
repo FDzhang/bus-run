@@ -18,29 +18,35 @@ import java.util.List;
 public class SiteService implements Runnable {
     private final static int P_NUMBER = 10;
 
-    private Long time = 0L;
     private TimeClock clock;
-
+    private TimeClock siteClock;
     private List<BusSite> busSiteList;
     private int siteBound;
-    private Long limit = 0L;
 
-    public SiteService(TimeClock clock, List<BusSite> busSiteList, Long limit) {
+    public SiteService(TimeClock clock,TimeClock siteClock, List<BusSite> busSiteList) {
         this.clock = clock;
+        this.siteClock = siteClock;
         this.busSiteList = busSiteList;
         this.siteBound = busSiteList.size();
-        this.limit = limit;
     }
 
     @Override
     public void run() {
-        if (clock.getTime().get() == time) {
-            for (int i = 0; i < P_NUMBER; i++) {
-                Passenger passenger = new Passenger(RandomUtil.busSiteRandom(siteBound), RandomUtil.busSiteRandom(siteBound));
-                int site = RandomUtil.busSiteRandom(siteBound) - 1;
-                busSiteList.get(site).addPassenger(passenger);
+        if (clock.getTime().get() == siteClock.getTime().get()) {
+            for (int i = 0; i < SiteService.P_NUMBER; i++) {
+                int source = RandomUtil.busSiteRandom(siteBound);
+                int target = RandomUtil.busSiteRandom(siteBound);
+                if (source != target) {
+                    Passenger passenger = new Passenger(source, target, source < target ? 0 : 1);
+                    busSiteList.get(source - 1).addPassenger(passenger);
+                }
             }
-            time += BusSiteConstant.CYCLE;
+            siteClock.getTime().getAndAdd(BusSiteConstant.CYCLE);
+
+            System.err.println("站点(code)\t路线:人数...");
+            for (BusSite site : busSiteList) {
+                System.err.println(site.toString());
+            }
         }
     }
 }
