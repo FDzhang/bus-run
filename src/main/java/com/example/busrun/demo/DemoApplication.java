@@ -14,31 +14,8 @@ import java.util.Map;
  * @create : 2022/3/17 19:56
  */
 public class DemoApplication {
-    private static final int CORE_POOL_SIZE = 15;
-    private static final int MAX_POOL_SIZE = 30;
-    private static final int QUEUE_CAPACITY = 100;
-    private static final Long KEEP_ALIVE_TIME = 1L;
-
 
     public static void main(String[] args) {
-//        ExecutorService timeExecutor = Executors.newSingleThreadExecutor();
-//
-//        ThreadPoolExecutor busSiteExecutor = new ThreadPoolExecutor(
-//                CORE_POOL_SIZE,
-//                MAX_POOL_SIZE,
-//                KEEP_ALIVE_TIME,
-//                TimeUnit.SECONDS,
-//                new ArrayBlockingQueue<>(QUEUE_CAPACITY),
-//                new ThreadPoolExecutor.CallerRunsPolicy());
-//
-//        ThreadPoolExecutor busExecutor = new ThreadPoolExecutor(
-//                CORE_POOL_SIZE,
-//                MAX_POOL_SIZE,
-//                KEEP_ALIVE_TIME,
-//                TimeUnit.SECONDS,
-//                new ArrayBlockingQueue<>(QUEUE_CAPACITY),
-//                new ThreadPoolExecutor.CallerRunsPolicy());
-
         TimeClock siteClock = new TimeClock();
         Map<Integer, BusSite> busSites = DemoApplication.buildBusSites(siteClock);
         Map<Integer, Route> routeMap = DemoApplication.buildRoute(busSites);
@@ -48,9 +25,6 @@ public class DemoApplication {
         System.err.println("init finish");
 
         TimeClock timeClock = new TimeClock();
-
-//        timeExecutor.execute(new TimeClockService(timeClock, limit));
-//        busSiteExecutor.execute(new SiteService(timeClock, new ArrayList<>(busSites.values()), limit));
 
         while (timeClock.getTime().get() < limit) {
             new SiteService(timeClock, siteClock, new ArrayList<>(busSites.values())).run();
@@ -62,23 +36,6 @@ public class DemoApplication {
             timeClock.getTime().getAndIncrement();
             System.err.println(timeClock.getTime().get());
         }
-
-
-//        for (int i = 0; i < 10; i++) {
-//            busExecutor.execute(new BusService(timeClock, busList.get(i), routeMap, limit));
-//        }
-
-//        //终止线程池
-//        timeExecutor.shutdown();
-//        busSiteExecutor.shutdown();
-//        busExecutor.shutdown();
-//        try {
-//            timeExecutor.awaitTermination(10, TimeUnit.SECONDS);
-//            busSiteExecutor.awaitTermination(10, TimeUnit.SECONDS);
-//            busExecutor.awaitTermination(10, TimeUnit.SECONDS);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
         System.out.println("Finished all");
 
 
