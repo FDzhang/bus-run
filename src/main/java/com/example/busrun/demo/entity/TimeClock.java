@@ -10,8 +10,8 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class TimeClock {
     private final ReentrantLock lock = new ReentrantLock();
-    final Condition r  = lock.newCondition();
-    final Condition w  = lock.newCondition();
+    final Condition r = lock.newCondition();
+    final Condition w = lock.newCondition();
 
     private volatile AtomicLong time = new AtomicLong(0L);
 
@@ -19,5 +19,12 @@ public class TimeClock {
         return time;
     }
 
+    public long getClock() {
+        return time.get();
+    }
+
+    public long getAndIncrement() {
+        return time.getAndIncrement();
+    }
 
 }

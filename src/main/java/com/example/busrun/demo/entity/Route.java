@@ -3,16 +3,43 @@ package com.example.busrun.demo.entity;
 import com.example.busrun.demo.constant.BusSiteTypeEnum;
 import lombok.Data;
 
+import java.lang.reflect.Field;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * 路线
+ *
  * @author : zxq
  * @create : 2022/3/17 18:12
  */
 @Data
 public class Route {
 
+    public Route() {
+    }
+
+    public Route(Integer routeCode, LinkedHashMap<Integer, BusSite> busSiteMap, Map<Integer, RoadSection> roadSectionMap) {
+        this.routeCode = routeCode;
+        this.busSiteMap = busSiteMap;
+        this.roadSectionMap = roadSectionMap;
+
+        this.startSiteCode  = busSiteMap.entrySet().iterator().next().getKey();
+        try {
+            Field tail = busSiteMap.getClass().getDeclaredField("tail");
+            tail.setAccessible(true);
+            this.endSiteCode = ((Map.Entry<Integer, BusSite>) tail.get(busSiteMap)).getKey();
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 编号
+     */
+    private Integer routeCode;
+
+    // ----------------
     /**
      * 起点
      */
@@ -24,32 +51,19 @@ public class Route {
     private Integer endSiteCode;
 
     /**
-     * 站点编号，站点
+     * 包含的站点
+     * - <站点编号,站点>
      */
-    private Map<Integer, BusSite> busSiteMap;
+    private LinkedHashMap<Integer, BusSite> busSiteMap;
 
     /**
-     * 站点编号，路段
+     * 包含的路段
+     * - <路段开头编号,路段>
      */
     private Map<Integer, RoadSection> roadSectionMap;
 
-    public Route() {
-    }
 
-    public Route(Map<Integer, BusSite> busSiteMap, Map<Integer, RoadSection> roadSectionMap) {
-        this.busSiteMap = busSiteMap;
-        this.roadSectionMap = roadSectionMap;
-    }
-
-    public BusSiteTypeEnum checkBusSiteType(int busSiteCode) {
-        if (this.startSiteCode == busSiteCode) {
-            return BusSiteTypeEnum.START;
-        } else if (this.endSiteCode == busSiteCode) {
-            return BusSiteTypeEnum.END;
-        } else {
-            return BusSiteTypeEnum.NORMAL;
-        }
-    }
+    // -------------------
 
     public boolean isStart(int busSiteCode) {
         return this.startSiteCode == busSiteCode;

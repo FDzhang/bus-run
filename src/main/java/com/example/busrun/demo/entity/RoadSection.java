@@ -12,6 +12,16 @@ import lombok.Data;
  */
 @Data
 public class RoadSection {
+
+    public RoadSection() {
+    }
+
+    public RoadSection(Integer curSite, Integer nextSite, Integer distance) {
+        this.curSite = curSite;
+        this.nextSite = nextSite;
+        this.distance = distance;
+    }
+
     /**
      * A站点编号
      */
@@ -26,13 +36,4 @@ public class RoadSection {
      */
     private Integer distance;
 
-
-    public RoadSection() {
-    }
-
-    public RoadSection(Integer curSite, Integer nextSite, Integer distance) {
-        this.curSite = curSite;
-        this.nextSite = nextSite;
-        this.distance = distance;
-    }
 }

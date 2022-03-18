@@ -2,8 +2,6 @@ package com.example.busrun.demo.entity;
 
 import lombok.Data;
 
-import java.util.Date;
-
 /**
  * 公交车的运行明细
  * @author : zxq

@@ -1,12 +1,13 @@
 package com.example.busrun.demo.entity;
 
+import com.example.busrun.demo.constant.BusConstant;
 import com.example.busrun.demo.constant.BusSiteTypeEnum;
 import com.example.busrun.demo.constant.BusStatusEnum;
 import com.example.busrun.demo.utils.TimeUtil;
 import lombok.Data;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,25 +20,25 @@ import java.util.Map;
 @Data
 public class Bus {
 
-    /**
-     * 公交车状态
-     */
-    private BusStatusEnum busStatus = BusStatusEnum.NORMAL;
+    public Bus() {
+    }
+
+    public Bus(TimeClock busClock, String name, LinkedHashMap<Integer, Route> routeMap) {
+        this.busClock = busClock;
+        this.name = name;
+        this.routeMap = routeMap;
+
+        // todo
+    }
+
+
+    // -----------------------
+
 
     /**
-     * 公交车 时间
+     * 标准时钟
      */
-    private Long time;
-
-    /**
-     * 当前站点编号
-     */
-    private Integer siteCode;
-
-    /**
-     * 路线 （上行(从小到大)：0， 下行（从大到小）：1）
-     */
-    private Integer routeCode;
+    private TimeClock busClock;
 
     /**
      * 公交车名称
@@ -45,138 +46,227 @@ public class Bus {
     private String name;
 
     /**
-     * 车上的乘客
-     * 各个目标站点的乘客
+     * 公交车状态
      */
-    private Map<Integer, List<Passenger>> passengersMap;
+    private BusStatusEnum busStatus = BusStatusEnum.NORMAL;
 
-    /**
-     * 公交车运行日志
-     */
-    private List<BusRunLog> busRunLogList;
+
+    //--------------------------------
 
     /**
      * 总载客人数
      */
-    private Integer totalPassengers;
+    private Integer totalPassengers = 0;
+    /**
+     * 总行驶时间(秒)
+     */
+    private Long totalDriveTime = 0L;
 
     /**
      * 总运行时间(秒)
      */
-    private Integer totalRunningTime;
+    private Long totalRunningTime = 0L;
+
+    /**
+     * 公交车运行日志
+     */
+    private List<BusRunLog> busRunLogList = new ArrayList<>();
+
+    // -------------------------------
+
+    /**
+     * 当前路线 （上行(从小到大)：0， 下行（从大到小）：1）
+     */
+    private Integer routeCode;
+
+    /**
+     * 可以运行的路线
+     * - <路线编号，路线>
+     */
+    private Map<Integer, Route> routeMap;
+
+    /**
+     * next站点编号
+     */
+    private Integer nextSiteCode;
+
+    /**
+     * 预计到达时间
+     */
+    private Long expectedArriveTime = 0L;
 
     /**
      * 最近一次出站时间
      */
-    private Integer outSiteTime;
+    private Long outSiteTime = 0L;
 
     /**
-     * 总行驶时间(秒)
+     * 车上的乘客
+     * - <乘客编号，乘客>
      */
-    private Integer totalDriveTime;
+    private LinkedHashMap<String, Passenger> passengerMap = new LinkedHashMap<>();
 
-
-    public Bus() {
-    }
-
-    public Bus(Integer routeCode, String name, Integer siteCode) {
-        this.siteCode = siteCode;
-        this.routeCode = routeCode;
-        this.name = name;
-        this.totalPassengers = 0;
-        this.totalRunningTime = 0;
-        this.totalDriveTime = 0;
-        this.time = 0L;
-        this.outSiteTime = 0;
-
-        this.passengersMap = new HashMap<>();
-        this.busRunLogList = new ArrayList<>();
-    }
+    // -------------------------------------
 
     /**
-     * 到站下车
+     * 入站
+     * - 入站日志
      */
-    public List<Passenger> offPassengers() {
-        List<Passenger> offPassenger = passengersMap.remove(this.getSiteCode());
-        return offPassenger == null ? new ArrayList<>() : offPassenger;
-    }
-
-    /**
-     * 故障下车
-     */
-    public List<Passenger> faultOffPassengers() {
-        List<Passenger> res = new ArrayList<>();
-        for (List<Passenger> p : passengersMap.values()) {
-            res.addAll(p);
-        }
-        this.busStatus = BusStatusEnum.FAULT;
-        // 记录日志
-        faultRunLog(res.size());
-        return res;
-    }
-
-    /**
-     * 乘客上车
-     */
-    public void upPassengers(List<Passenger> passengers) {
-        for (Passenger passenger : passengers) {
-            Integer targetSite = passenger.getTargetSite();
-
-            if (!passengersMap.containsKey(targetSite)) {
-                passengersMap.put(targetSite, new ArrayList<>());
-            }
-            passengersMap.get(targetSite).add(passenger);
-        }
-        totalPassengers += passengers.size();
+    public void enterBusSite() {
+        enterSiteRunLog();
     }
 
     /**
      * 入站日志
      */
-    public void enterSiteRunLog(BusSiteTypeEnum siteType) {
-        String action;
-        if (BusSiteTypeEnum.END.equals(siteType)) {
-            action = "抵达终点站";
-            totalDriveTime += (time.intValue() - outSiteTime);
-            totalRunningTime = time.intValue();
-        } else if (BusSiteTypeEnum.NORMAL.equals(siteType)) {
-            action = String.format("到达 %02d 站", this.siteCode);
-            totalDriveTime += (time.intValue() - outSiteTime);
-            totalRunningTime = time.intValue();
-        } else {
+    public void enterSiteRunLog() {
+        Route route = this.routeMap.get(this.getRouteCode());
+
+        if (route.isStart(this.nextSiteCode)) {
             return;
         }
-        busRunLogList.add(new BusRunLog(this.time, action));
+
+        String action;
+        if (route.isEnd(this.nextSiteCode)) {
+            action = "抵达终点站";
+        } else {
+            action = String.format("到达 %02d 站", this.nextSiteCode);
+        }
+        totalDriveTime += (busClock.getClock() - outSiteTime);
+        totalRunningTime = busClock.getClock();
+        busRunLogList.add(new BusRunLog(this.busClock.getClock(), action));
     }
 
     /**
-     * 出站日志
+     * 通知乘客下车
+     * - 乘客下车
+     * - 故障下车
      */
-    public void outSiteRunLog(BusSiteTypeEnum siteType, Integer offNumber, Integer upNumber) {
-        String action;
-        if (BusSiteTypeEnum.START.equals(siteType)) {
-            action = String.format("从 %02d 站发车，乘客 %d 人", this.siteCode, upNumber);
-            // 出站行驶
-            this.outSiteTime = time.intValue();
-        } else if (BusSiteTypeEnum.NORMAL.equals(siteType)) {
-            action = String.format("下客 %d 人，上客 %d 人，继续出发", offNumber, upNumber);
-            // 出站行驶
-            this.outSiteTime = time.intValue();
-        } else {
-            action = String.format("下客 %d 人，等待发车", offNumber);
+    public List<Passenger> notifyPassengerOff() {
+        if (BusStatusEnum.FAULT.equals(this.busStatus)) {
+            return notifyPassengerOffFault();
         }
-        action += " 当前车上人数：" + this.passengersMap.values().stream().mapToInt(List::size).sum();
-        busRunLogList.add(new BusRunLog(this.time, action));
+
+        return notifyPassengerOffNormal();
+    }
+
+    public List<Passenger> notifyPassengerOffNormal() {
+        List<Passenger> res = new ArrayList<>();
+        // 需要下车的乘客
+        for (Passenger p : this.passengerMap.values()) {
+            if (p.getTargetSite().equals(this.nextSiteCode)) {
+                res.add(p);
+            }
+        }
+        // 删除下车的乘客
+        for (Passenger p : res) {
+            p.offBus(this);
+        }
+        return res;
+    }
+
+    public List<Passenger> notifyPassengerOffFault() {
+        // 需要下车的乘客
+        List<Passenger> res = new ArrayList<>(passengerMap.values());
+
+        // 删除下车的乘客
+        for (Passenger p : passengerMap.values()) {
+            p.offBus(this);
+        }
+        return res;
+    }
+
+    /**
+     * 车辆故障
+     * - 标记故障
+     * - 故障日志
+     */
+    public void busFault() {
+        this.busStatus = BusStatusEnum.FAULT;
+        faultRunLog();
+
+        totalDriveTime += (busClock.getClock() - outSiteTime);
+        totalRunningTime = busClock.getClock();
     }
 
     /**
      * 故障日志
      */
-    public void faultRunLog(Integer pNumber) {
-        String action = String.format("在 %02d 站故障，下客 %d 人", this.siteCode, pNumber);
-        busRunLogList.add(new BusRunLog(this.time, action));
+    public void faultRunLog() {
+        String action = String.format("在 %02d 站故障，下客 %d 人", this.nextSiteCode, passengerMap.size());
+        busRunLogList.add(new BusRunLog(this.busClock.getClock(), action));
     }
 
+    /**
+     * 通知站点到站
+     * - 非终点则通知
+     */
+    public void notifyBusSiteArrive() {
+        Route route = this.routeMap.get(this.getRouteCode());
+
+        if (route.isEnd(this.nextSiteCode)) {
+            BusSite busSite = route.getBusSiteMap().get(this.nextSiteCode);
+            // 公交到站、通知乘客上车
+            busSite.notifyPassengerUp(this);
+        }
+    }
+
+    /**
+     * 变更车站信息
+     * - 是否需要改变路线和等待发车
+     * - 改变下一站站点编号
+     * - 下一站预计到达时间
+     */
+    public void busToNext() {
+        Route route = this.routeMap.get(this.getRouteCode());
+
+        if (route.isEnd(this.nextSiteCode)) {
+            // 目前只有 0：上行， 1：下行
+            this.routeCode = (this.routeCode + 1) % 2;
+            this.expectedArriveTime += BusConstant.CYCLE;
+
+            Route newRoute = this.routeMap.get(this.getRouteCode());
+            this.nextSiteCode = newRoute.getBusSiteMap().values().iterator().next().getSiteCode();
+        } else {
+            RoadSection roadSection = route.getRoadSectionMap().get(this.nextSiteCode);
+            this.nextSiteCode = roadSection.getNextSite();
+            this.expectedArriveTime += roadSection.getDistance();
+        }
+    }
+
+    /**
+     * 出站
+     * - 改变最近一次出站时间
+     * - 出站日志
+     */
+    public void outBusSite(Integer offNumber, Integer upNumber) {
+        outSiteRunLog(offNumber, upNumber);
+    }
+
+    /**
+     * 出站日志
+     */
+    public void outSiteRunLog(Integer offNumber, Integer upNumber) {
+        Route route = this.routeMap.get(this.getRouteCode());
+
+        String action;
+        if (route.isStart(this.nextSiteCode)) {
+            action = String.format("从 %02d 站发车，乘客 %d 人", this.nextSiteCode, upNumber);
+            this.outSiteTime = this.getBusClock().getClock();
+        } else if (route.isEnd(this.nextSiteCode)) {
+            action = String.format("下客 %d 人，等待发车", offNumber);
+            this.outSiteTime = this.getBusClock().getClock() + BusConstant.CYCLE;
+        } else {
+            action = String.format("下客 %d 人，上客 %d 人，继续出发", offNumber, upNumber);
+            this.outSiteTime = this.getBusClock().getClock();
+        }
+        busRunLogList.add(new BusRunLog(this.busClock.getClock(), action));
+    }
+
+
+    /**
+     * 日志打印
+     */
     public void printRunLog() {
         System.err.println("公交车 " + this.name);
         System.err.println("时间 \t 动作");

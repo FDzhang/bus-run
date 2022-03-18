@@ -16,37 +16,9 @@ import java.util.List;
  * @create : 2022/3/17 21:55
  */
 public class SiteService implements Runnable {
-    private final static int P_NUMBER = 10;
-
-    private TimeClock clock;
-    private TimeClock siteClock;
-    private List<BusSite> busSiteList;
-    private int siteBound;
-
-    public SiteService(TimeClock clock,TimeClock siteClock, List<BusSite> busSiteList) {
-        this.clock = clock;
-        this.siteClock = siteClock;
-        this.busSiteList = busSiteList;
-        this.siteBound = busSiteList.size();
-    }
 
     @Override
     public void run() {
-        if (clock.getTime().get() == siteClock.getTime().get()) {
-            for (int i = 0; i < SiteService.P_NUMBER; i++) {
-                int source = IRandomUtil.busSiteRandom(siteBound);
-                int target = IRandomUtil.busSiteRandom(siteBound);
-                if (source != target) {
-                    Passenger passenger = new Passenger(source, target, source < target ? 0 : 1);
-                    busSiteList.get(source - 1).addPassenger(passenger);
-                }
-            }
-            siteClock.getTime().getAndAdd(BusSiteConstant.CYCLE);
 
-            System.err.println("站点(code)\t路线:人数...");
-            for (BusSite site : busSiteList) {
-                System.err.println(site.toString());
-            }
-        }
     }
 }

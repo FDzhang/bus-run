@@ -8,8 +8,22 @@ import lombok.Data;
  */
 @Data
 public class Passenger {
+    public Passenger(String passengerCode, Integer routeCode, Integer curSite, Integer targetSite) {
+        this.curSite = curSite;
+        this.targetSite = targetSite;
+        this.routeCode = routeCode;
+
+        this.passengerCode = passengerCode;
+    }
+
     /**
-     * 所在站点
+     * 编号
+     */
+    private String passengerCode;
+
+    // -------------------
+    /**
+     * 起点站点
      */
     private Integer curSite;
     /**
@@ -18,13 +32,33 @@ public class Passenger {
     private Integer targetSite;
 
     /**
-     * 路线 （所在站点+目标站点决定路线）
+     * 路线编号
      */
     private Integer routeCode;
 
-    public Passenger(Integer curSite, Integer targetSite, Integer routeCode) {
-        this.curSite = curSite;
-        this.targetSite = targetSite;
-        this.routeCode = routeCode;
+
+    // ------------
+
+    /**
+     * 上车
+     */
+    public void upBus(Bus bus) {
+        bus.getPassengerMap().put(this.getPassengerCode(), this);
     }
+
+    /**
+     * 下车
+     */
+    public void offBus(Bus bus) {
+        bus.getPassengerMap().remove(this.getPassengerCode());
+
+        // 没到目的地
+        if (!this.getRouteCode().equals(bus.getNextSiteCode())) {
+            Route route = bus.getRouteMap().get(bus.getRouteCode());
+            BusSite busSite = route.getBusSiteMap().get(bus.getNextSiteCode());
+
+            busSite.getPassengers().addFirst(this);
+        }
+    }
+
 }

@@ -24,7 +24,7 @@ public class IRandomUtil {
      * 故障几率：十分之一
      */
     public static boolean busFaultRandom() {
-        return new Random().nextInt(40) % 40 == 1;
+        return new Random().nextInt(10) % 10 == 1;
     }
 
     /**
