@@ -4,7 +4,7 @@ import com.example.busrun.demo.constant.BusSiteConstant;
 import com.example.busrun.demo.entity.BusSite;
 import com.example.busrun.demo.entity.Passenger;
 import com.example.busrun.demo.entity.TimeClock;
-import com.example.busrun.demo.utils.RandomUtil;
+import com.example.busrun.demo.utils.IRandomUtil;
 
 import java.util.List;
 
@@ -34,8 +34,8 @@ public class SiteService implements Runnable {
     public void run() {
         if (clock.getTime().get() == siteClock.getTime().get()) {
             for (int i = 0; i < SiteService.P_NUMBER; i++) {
-                int source = RandomUtil.busSiteRandom(siteBound);
-                int target = RandomUtil.busSiteRandom(siteBound);
+                int source = IRandomUtil.busSiteRandom(siteBound);
+                int target = IRandomUtil.busSiteRandom(siteBound);
                 if (source != target) {
                     Passenger passenger = new Passenger(source, target, source < target ? 0 : 1);
                     busSiteList.get(source - 1).addPassenger(passenger);

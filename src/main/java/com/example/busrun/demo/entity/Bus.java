@@ -66,7 +66,7 @@ public class Bus {
     private Integer totalRunningTime;
 
     /**
-     * 从起点出发的时间
+     * 最近一次出站时间
      */
     private Integer outSiteTime;
 

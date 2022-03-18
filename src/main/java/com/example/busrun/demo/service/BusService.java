@@ -2,7 +2,7 @@ package com.example.busrun.demo.service;
 
 import com.example.busrun.demo.constant.BusConstant;
 import com.example.busrun.demo.entity.*;
-import com.example.busrun.demo.utils.RandomUtil;
+import com.example.busrun.demo.utils.IRandomUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +51,7 @@ public class BusService implements Runnable {
             bus.enterSiteRunLog(route.checkBusSiteType(curBusSite.getCode()));
 
             // 概率性故障
-            if (RandomUtil.busFaultRandom()) {
+            if (IRandomUtil.busFaultRandom()) {
                 // 故障乘客下车
                 List<Passenger> faultOffPassengers = bus.faultOffPassengers();
                 curBusSite.addPassengers(faultOffPassengers, true);
@@ -73,7 +73,7 @@ public class BusService implements Runnable {
                 bus.outSiteRunLog(route.checkBusSiteType(curBusSite.getCode()), offPassengers.size(), sitePassengers.size());
 
                 // 添加一个随机时间
-                bus.setTime(bus.getTime() + RandomUtil.driveTimeRandom());
+                bus.setTime(bus.getTime() + IRandomUtil.driveTimeRandom());
                 // 终点站转向
                 if (route.isEnd(curBusSite.getCode())) {
                     bus.setRouteCode((bus.getRouteCode() + 1) % 2);

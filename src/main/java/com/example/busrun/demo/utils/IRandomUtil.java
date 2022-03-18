@@ -1,5 +1,7 @@
 package com.example.busrun.demo.utils;
 
+import cn.hutool.core.util.RandomUtil;
+
 import java.util.Random;
 
 /**
@@ -8,7 +10,7 @@ import java.util.Random;
  * @author : zxq
  * @create : 2022/3/17 19:11
  */
-public class RandomUtil {
+public class IRandomUtil {
 
     /**
      * 行驶时间的随机误差（秒） ， 0 or 1 分钟
@@ -29,6 +31,7 @@ public class RandomUtil {
      * 随机站点
      */
     public static int busSiteRandom(int bound) {
+        Random random = new Random();
         return new Random().nextInt(bound) + 1;
     }
 
