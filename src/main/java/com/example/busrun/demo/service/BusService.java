@@ -48,8 +48,8 @@ public class BusService implements Runnable {
                 List<Passenger> offPassenger = bus.notifyPassengerOff();
                 List<Passenger> upPassenger = bus.notifyBusSiteArrive();
 
-                bus.busToNext();
                 bus.outBusSite(offPassenger.size(), upPassenger.size());
+                bus.busToNext();
             }
         }
     }

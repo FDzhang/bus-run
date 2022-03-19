@@ -30,7 +30,7 @@ public class DemoApplication {
                 new BusService(bus).run();
             }
 
-            clock.getAndIncrement();
+            clock.getTime().getAndAdd(60);
         }
         System.out.println("Finished all");
 
@@ -42,7 +42,7 @@ public class DemoApplication {
             System.err.println(bus.toString());
         }
 
-        System.err.println("站点(code)\t路线:人数...");
+        System.err.println("站点(code)\t人数");
         for (BusSite site : busSites.values()) {
             System.err.println(site.toString());
         }

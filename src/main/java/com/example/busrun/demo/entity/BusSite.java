@@ -1,5 +1,6 @@
 package com.example.busrun.demo.entity;
 
+import com.example.busrun.demo.constant.BusConstant;
 import lombok.Data;
 
 import java.util.*;
@@ -60,6 +61,9 @@ public class BusSite {
                 pSet.add(p.getPassengerCode());
                 upPassengers.add(p);
             }
+            if (bus.getPassengerMap().size() >= BusConstant.CAPACITY){
+                break;
+            }
         }
         passengers.removeIf(next -> pSet.contains(next.getPassengerCode()));
         return upPassengers;
@@ -67,10 +71,8 @@ public class BusSite {
 
     @Override
     public String toString() {
-        // 站点(code)   路线:人数...
-        StringBuilder rp = new StringBuilder();
-
-        return String.format("%02d\t %15s", this.siteCode, rp.toString());
+        // 站点(code)   人数...
+        return String.format("%02d\t %10s", this.siteCode, this.passengers.size());
     }
 
 

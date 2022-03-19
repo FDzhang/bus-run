@@ -1,6 +1,7 @@
 package com.example.busrun.demo.service;
 
 import com.example.busrun.demo.entity.Passenger;
+import com.example.busrun.demo.entity.RoadSection;
 import com.example.busrun.demo.entity.Route;
 import com.example.busrun.demo.entity.TimeClock;
 import com.example.busrun.demo.utils.IRandomUtil;
@@ -47,8 +48,14 @@ public class SiteService implements Runnable {
         // 随机路线
         Route route = routeMap.get(routeCode);
         // 随机 起点、终点
-        List<Integer> site2 = IRandomUtil.randomEleList(new ArrayList<>(route.getBusSiteMap().keySet()));
+        ArrayList<RoadSection> roadSections = new ArrayList<>(route.getRoadSectionMap().values());
+        List<Integer> sites = new ArrayList<>();
+        for (RoadSection r : roadSections) {
+            sites.add(r.getCurSite());
+        }
+        sites.add(roadSections.get(roadSections.size() - 1).getNextSite());
 
+        List<Integer> site2 = IRandomUtil.randomEleList(sites);
         Passenger p = new Passenger(IRandomUtil.fastSimpleUUID(), routeCode, site2.get(0), site2.get(1));
 
         // 入站

@@ -130,17 +130,16 @@ public class Bus {
     public void enterSiteRunLog() {
         Route route = this.routeMap.get(this.getRouteCode());
 
-        if (route.isStart(this.nextSiteCode)) {
-            return;
-        }
-
         String action;
-        if (route.isEnd(this.nextSiteCode)) {
-            action = "抵达终点站";
+        if (route.isStart(this.nextSiteCode)) {
+            action = String.format("到达起点站 %02d 站, 即将发车", this.nextSiteCode);
+        } else if (route.isEnd(this.nextSiteCode)) {
+            action = String.format("抵达终点站， %02d 站", this.nextSiteCode);
+            totalDriveTime += (busClock.getClock() - outSiteTime);
         } else {
             action = String.format("到达 %02d 站", this.nextSiteCode);
+            totalDriveTime += (busClock.getClock() - outSiteTime);
         }
-        totalDriveTime += (busClock.getClock() - outSiteTime);
         totalRunningTime = busClock.getClock();
         busRunLogList.add(new BusRunLog(this.busClock.getClock(), action));
     }
@@ -178,7 +177,7 @@ public class Bus {
         List<Passenger> res = new ArrayList<>(passengerMap.values());
 
         // 删除下车的乘客
-        for (Passenger p : passengerMap.values()) {
+        for (Passenger p : res) {
             p.offBus(this);
         }
         return res;
@@ -192,9 +191,6 @@ public class Bus {
     public void busFault() {
         this.busStatus = BusStatusEnum.FAULT;
         faultRunLog();
-
-        totalDriveTime += (busClock.getClock() - outSiteTime);
-        totalRunningTime = busClock.getClock();
     }
 
     /**
@@ -215,7 +211,9 @@ public class Bus {
         if (!route.isEnd(this.nextSiteCode)) {
             BusSite busSite = route.getBusSiteMap().get(this.nextSiteCode);
             // 公交到站、通知乘客上车
-            return busSite.notifyPassengerUp(this);
+            List<Passenger> upPassengers = busSite.notifyPassengerUp(this);
+            this.totalPassengers += upPassengers.size();
+            return upPassengers;
         }
         return new ArrayList<>();
     }
@@ -228,7 +226,7 @@ public class Bus {
      */
     public void busToNext() {
         Route route = this.routeMap.get(this.getRouteCode());
-        this.expectedArriveTime += BusConstant.UP_OFF_TIME;
+        // this.expectedArriveTime += BusConstant.UP_OFF_TIME;
         this.expectedArriveTime += IRandomUtil.driveTimeRandom();
 
         if (route.isEnd(this.nextSiteCode)) {
@@ -236,12 +234,12 @@ public class Bus {
             this.routeCode = (this.routeCode + 1) % 2;
             this.expectedArriveTime += BusConstant.CYCLE;
 
-            Route newRoute = this.routeMap.get(this.getRouteCode());
-            this.nextSiteCode = newRoute.getBusSiteMap().values().iterator().next().getSiteCode();
+            Route newRoute = this.routeMap.get(this.routeCode);
+            this.nextSiteCode = newRoute.getRoadSectionMap().values().iterator().next().getCurSite();
         } else {
             RoadSection roadSection = route.getRoadSectionMap().get(this.nextSiteCode);
             this.nextSiteCode = roadSection.getNextSite();
-            this.expectedArriveTime += roadSection.getDistance();
+            this.expectedArriveTime += roadSection.getDistance() * 60;
         }
     }
 
@@ -262,7 +260,7 @@ public class Bus {
 
         String action;
         if (route.isStart(this.nextSiteCode)) {
-            action = String.format("从 %02d 站发车，乘客 %d 人", this.nextSiteCode, upNumber);
+            action = String.format("从 %02d 站发车，上客 %d 人", this.nextSiteCode, upNumber);
             this.outSiteTime = this.getBusClock().getClock();
         } else if (route.isEnd(this.nextSiteCode)) {
             action = String.format("下客 %d 人，等待发车", offNumber);

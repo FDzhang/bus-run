@@ -53,7 +53,7 @@ public class Passenger {
         bus.getPassengerMap().remove(this.getPassengerCode());
 
         // 没到目的地
-        if (!this.getRouteCode().equals(bus.getNextSiteCode())) {
+        if (!this.getTargetSite().equals(bus.getNextSiteCode())) {
             Route route = bus.getRouteMap().get(bus.getRouteCode());
             BusSite busSite = route.getBusSiteMap().get(bus.getNextSiteCode());
 
