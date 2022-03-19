@@ -9,6 +9,7 @@ import com.example.busrun.demo.utils.IRandomUtil;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * 站点服务
@@ -18,11 +19,13 @@ import java.util.List;
  * @create : 2022/3/17 21:55
  */
 public class SiteService implements Runnable {
-    public SiteService(TimeClock clock, LinkedHashMap<Integer, Route> routeMap) {
+    public SiteService(TimeClock clock, LinkedHashMap<Integer, Route> routeMap, CountDownLatch countDownLatch) {
         this.clock = clock;
         this.routeMap = routeMap;
+        this.countDownLatch = countDownLatch;
     }
 
+    private CountDownLatch countDownLatch;
     /**
      * 时钟
      */
@@ -41,6 +44,7 @@ public class SiteService implements Runnable {
                 randomPassenger();
             }
         }
+        countDownLatch.countDown();
     }
 
     public void randomPassenger() {

@@ -5,7 +5,13 @@ import com.example.busrun.demo.entity.*;
 import com.example.busrun.demo.service.BusService;
 import com.example.busrun.demo.service.SiteService;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author : zxq
@@ -15,8 +21,22 @@ public class DemoApplication {
 
     private final static Long RUN_TIME_LIMIT = 300 * 60L;
 
+    private static final int CORE_POOL_SIZE = 5;
+    private static final int MAX_POOL_SIZE = 10;
+    private static final int QUEUE_CAPACITY = 100;
+    private static final Long KEEP_ALIVE_TIME = 1L;
+
 
     public static void main(String[] args) {
+        long now = System.nanoTime();
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(
+                DemoApplication.CORE_POOL_SIZE,
+                DemoApplication.MAX_POOL_SIZE,
+                DemoApplication.KEEP_ALIVE_TIME,
+                TimeUnit.SECONDS,
+                new ArrayBlockingQueue<>(DemoApplication.QUEUE_CAPACITY),
+                new ThreadPoolExecutor.CallerRunsPolicy());
+
         TimeClock clock = new TimeClock();
 
         LinkedHashMap<Integer, BusSite> busSites = DemoApplication.buildBusSites(clock);
@@ -24,15 +44,30 @@ public class DemoApplication {
         List<Bus> busList = DemoApplication.buildBusList(clock, routeMap);
 
         while (clock.getClock() < DemoApplication.RUN_TIME_LIMIT) {
-            new SiteService(clock, routeMap).run();
+            CountDownLatch countDownLatch = new CountDownLatch(11);
 
+            executor.execute(new SiteService(clock, routeMap, countDownLatch));
             for (Bus bus : busList) {
-                new BusService(bus).run();
+                executor.execute(new BusService(bus, countDownLatch));
             }
-
+            try {
+                countDownLatch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             clock.getTime().getAndAdd(60);
         }
+        //终止线程池
+        executor.shutdown();
+        try {
+            boolean b = executor.awaitTermination(10, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         System.out.println("Finished all");
+
+        System.err.println(System.nanoTime() - now);
+
 
         for (Bus bus : busList) {
             bus.printRunLog();
@@ -46,6 +81,7 @@ public class DemoApplication {
         for (BusSite site : busSites.values()) {
             System.err.println(site.toString());
         }
+
     }
 
 

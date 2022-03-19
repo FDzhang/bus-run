@@ -5,6 +5,7 @@ import com.example.busrun.demo.entity.Passenger;
 import com.example.busrun.demo.utils.IRandomUtil;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * 公交车 服务
@@ -15,15 +16,19 @@ import java.util.List;
  */
 public class BusService implements Runnable {
 
-    public BusService(Bus bus) {
+    public BusService(Bus bus, CountDownLatch countDownLatch) {
         this.bus = bus;
+        this.countDownLatch = countDownLatch;
     }
+
+    private CountDownLatch countDownLatch;
 
     private Bus bus;
 
     @Override
     public void run() {
         busRun();
+        countDownLatch.countDown();
     }
 
     /**
