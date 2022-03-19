@@ -50,16 +50,19 @@ public class BusSite {
      * 公交到站、通知乘客上车
      * - 乘客上车
      */
-    public void notifyPassengerUp(Bus bus) {
+    public List<Passenger> notifyPassengerUp(Bus bus) {
         Set<String> pSet = new HashSet<>();
+        List<Passenger> upPassengers = new ArrayList<>();
         for (Passenger p : passengers) {
             if (p.getRouteCode().equals(bus.getRouteCode())) {
                 // 上车
                 p.upBus(bus);
                 pSet.add(p.getPassengerCode());
+                upPassengers.add(p);
             }
         }
         passengers.removeIf(next -> pSet.contains(next.getPassengerCode()));
+        return upPassengers;
     }
 
     @Override

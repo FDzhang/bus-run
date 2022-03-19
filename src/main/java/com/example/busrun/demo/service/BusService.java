@@ -1,12 +1,10 @@
 package com.example.busrun.demo.service;
 
-import com.example.busrun.demo.constant.BusConstant;
-import com.example.busrun.demo.entity.*;
+import com.example.busrun.demo.entity.Bus;
+import com.example.busrun.demo.entity.Passenger;
 import com.example.busrun.demo.utils.IRandomUtil;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 公交车 服务
@@ -17,8 +15,42 @@ import java.util.Map;
  */
 public class BusService implements Runnable {
 
+    public BusService(Bus bus) {
+        this.bus = bus;
+    }
+
+    private Bus bus;
+
     @Override
     public void run() {
+        busRun();
+    }
 
+    /**
+     * 处理某个公交某一时间点可能发生的事件
+     * - 是否到站
+     * - 公交入站
+     * - 是否故障
+     * -- 标记故障
+     * -- 故障下车
+     * - 通知乘客下车
+     * - 通知站点到站
+     * - 变车站信息
+     * - 公交出站
+     */
+    public void busRun() {
+        if (bus.getBusClock().getClock() == bus.getExpectedArriveTime()) {
+            bus.enterBusSite();
+            if (IRandomUtil.busFaultRandom()) {
+                bus.busFault();
+                bus.notifyPassengerOff();
+            } else {
+                List<Passenger> offPassenger = bus.notifyPassengerOff();
+                List<Passenger> upPassenger = bus.notifyBusSiteArrive();
+
+                bus.busToNext();
+                bus.outBusSite(offPassenger.size(), upPassenger.size());
+            }
+        }
     }
 }

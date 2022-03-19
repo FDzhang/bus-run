@@ -19,16 +19,16 @@ public class Route {
     public Route() {
     }
 
-    public Route(Integer routeCode, LinkedHashMap<Integer, BusSite> busSiteMap, Map<Integer, RoadSection> roadSectionMap) {
+    public Route(Integer routeCode, LinkedHashMap<Integer, BusSite> busSiteMap, LinkedHashMap<Integer, RoadSection> roadSectionMap) {
         this.routeCode = routeCode;
         this.busSiteMap = busSiteMap;
         this.roadSectionMap = roadSectionMap;
 
-        this.startSiteCode  = busSiteMap.entrySet().iterator().next().getKey();
+        this.startSiteCode  = roadSectionMap.entrySet().iterator().next().getKey();
         try {
-            Field tail = busSiteMap.getClass().getDeclaredField("tail");
+            Field tail = roadSectionMap.getClass().getDeclaredField("tail");
             tail.setAccessible(true);
-            this.endSiteCode = ((Map.Entry<Integer, BusSite>) tail.get(busSiteMap)).getKey();
+            this.endSiteCode = ((Map.Entry<Integer, RoadSection>) tail.get(roadSectionMap)).getValue().getNextSite();
         } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -60,7 +60,7 @@ public class Route {
      * 包含的路段
      * - <路段开头编号,路段>
      */
-    private Map<Integer, RoadSection> roadSectionMap;
+    private LinkedHashMap<Integer, RoadSection> roadSectionMap;
 
 
     // -------------------

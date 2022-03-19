@@ -1,8 +1,8 @@
 package com.example.busrun.demo.entity;
 
 import com.example.busrun.demo.constant.BusConstant;
-import com.example.busrun.demo.constant.BusSiteTypeEnum;
 import com.example.busrun.demo.constant.BusStatusEnum;
+import com.example.busrun.demo.utils.IRandomUtil;
 import com.example.busrun.demo.utils.TimeUtil;
 import lombok.Data;
 
@@ -23,12 +23,13 @@ public class Bus {
     public Bus() {
     }
 
-    public Bus(TimeClock busClock, String name, LinkedHashMap<Integer, Route> routeMap) {
+    public Bus(TimeClock busClock, String name, LinkedHashMap<Integer, Route> routeMap, int startCode) {
         this.busClock = busClock;
         this.name = name;
         this.routeMap = routeMap;
 
-        // todo
+        this.routeCode = startCode;
+        this.nextSiteCode = routeMap.get(this.routeCode).getStartSiteCode();
     }
 
 
@@ -109,6 +110,13 @@ public class Bus {
     // -------------------------------------
 
     /**
+     * 设置发车时间
+     */
+    public void setStartTime(Long startTime) {
+        this.expectedArriveTime = startTime;
+    }
+
+    /**
      * 入站
      * - 入站日志
      */
@@ -150,7 +158,7 @@ public class Bus {
         return notifyPassengerOffNormal();
     }
 
-    public List<Passenger> notifyPassengerOffNormal() {
+    private List<Passenger> notifyPassengerOffNormal() {
         List<Passenger> res = new ArrayList<>();
         // 需要下车的乘客
         for (Passenger p : this.passengerMap.values()) {
@@ -165,7 +173,7 @@ public class Bus {
         return res;
     }
 
-    public List<Passenger> notifyPassengerOffFault() {
+    private List<Passenger> notifyPassengerOffFault() {
         // 需要下车的乘客
         List<Passenger> res = new ArrayList<>(passengerMap.values());
 
@@ -192,7 +200,7 @@ public class Bus {
     /**
      * 故障日志
      */
-    public void faultRunLog() {
+    private void faultRunLog() {
         String action = String.format("在 %02d 站故障，下客 %d 人", this.nextSiteCode, passengerMap.size());
         busRunLogList.add(new BusRunLog(this.busClock.getClock(), action));
     }
@@ -201,24 +209,27 @@ public class Bus {
      * 通知站点到站
      * - 非终点则通知
      */
-    public void notifyBusSiteArrive() {
+    public List<Passenger> notifyBusSiteArrive() {
         Route route = this.routeMap.get(this.getRouteCode());
 
-        if (route.isEnd(this.nextSiteCode)) {
+        if (!route.isEnd(this.nextSiteCode)) {
             BusSite busSite = route.getBusSiteMap().get(this.nextSiteCode);
             // 公交到站、通知乘客上车
-            busSite.notifyPassengerUp(this);
+            return busSite.notifyPassengerUp(this);
         }
+        return new ArrayList<>();
     }
 
     /**
      * 变更车站信息
      * - 是否需要改变路线和等待发车
      * - 改变下一站站点编号
-     * - 下一站预计到达时间
+     * - 下一站预计到达时间 (上下车时间+距离时间+误差时间)
      */
     public void busToNext() {
         Route route = this.routeMap.get(this.getRouteCode());
+        this.expectedArriveTime += BusConstant.UP_OFF_TIME;
+        this.expectedArriveTime += IRandomUtil.driveTimeRandom();
 
         if (route.isEnd(this.nextSiteCode)) {
             // 目前只有 0：上行， 1：下行
@@ -246,7 +257,7 @@ public class Bus {
     /**
      * 出站日志
      */
-    public void outSiteRunLog(Integer offNumber, Integer upNumber) {
+    private void outSiteRunLog(Integer offNumber, Integer upNumber) {
         Route route = this.routeMap.get(this.getRouteCode());
 
         String action;
