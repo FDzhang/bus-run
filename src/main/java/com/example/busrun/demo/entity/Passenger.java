@@ -57,7 +57,7 @@ public class Passenger {
             Route route = bus.getRouteMap().get(bus.getRouteCode());
             BusSite busSite = route.getBusSiteMap().get(bus.getNextSiteCode());
 
-            busSite.getPassengers().addFirst(this);
+            busSite.addPassenger(this);
         }
     }
 

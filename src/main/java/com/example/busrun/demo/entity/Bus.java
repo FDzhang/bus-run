@@ -141,7 +141,7 @@ public class Bus {
             totalDriveTime += (busClock.getClock() - outSiteTime);
         }
         totalRunningTime = busClock.getClock();
-        busRunLogList.add(new BusRunLog(this.busClock.getClock(), action));
+        busRunLogList.add(new BusRunLog(this.expectedArriveTime, action));
     }
 
     /**
@@ -213,6 +213,7 @@ public class Bus {
             // 公交到站、通知乘客上车
             List<Passenger> upPassengers = busSite.notifyPassengerUp(this);
             this.totalPassengers += upPassengers.size();
+            this.expectedArriveTime += upPassengers.size() * BusConstant.UP_OFF_TIME;
             return upPassengers;
         }
         return new ArrayList<>();
@@ -269,7 +270,7 @@ public class Bus {
             action = String.format("下客 %d 人，上客 %d 人，继续出发", offNumber, upNumber);
             this.outSiteTime = this.getBusClock().getClock();
         }
-        busRunLogList.add(new BusRunLog(this.busClock.getClock(), action));
+        busRunLogList.add(new BusRunLog(this.expectedArriveTime, action));
     }
 
 

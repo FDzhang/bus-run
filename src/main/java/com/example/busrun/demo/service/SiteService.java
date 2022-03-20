@@ -40,7 +40,7 @@ public class SiteService implements Runnable {
     public void run() {
         // 每5分钟
         if (clock.getClock() % (5 * 60) == 0) {
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 10; i++) {
                 randomPassenger();
             }
         }
@@ -63,6 +63,6 @@ public class SiteService implements Runnable {
         Passenger p = new Passenger(IRandomUtil.fastSimpleUUID(), routeCode, site2.get(0), site2.get(1));
 
         // 入站
-        route.getBusSiteMap().get(site2.get(0)).getPassengers().add(p);
+        route.getBusSiteMap().get(site2.get(0)).addPassenger(p);
     }
 }

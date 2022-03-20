@@ -6,7 +6,6 @@ import lombok.Data;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 /**
  * 公交车站点
@@ -43,29 +42,51 @@ public class BusSite {
      * 站点的乘客
      * - <乘客编号，乘客>
      */
-    private LinkedList<Passenger> passengers;
+    private volatile LinkedList<Passenger> passengers;
 
     // --------------------------------------
+
+    /**
+     * 插队
+     */
+    public Passenger addPassenger(Passenger p) {
+        lock.lock();
+        try {
+            passengers.addFirst(p);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            lock.unlock();
+        }
+        return p;
+    }
 
     /**
      * 公交到站、通知乘客上车
      * - 乘客上车
      */
     public List<Passenger> notifyPassengerUp(Bus bus) {
-        Set<String> pSet = new HashSet<>();
         List<Passenger> upPassengers = new ArrayList<>();
-        for (Passenger p : passengers) {
-            if (p.getRouteCode().equals(bus.getRouteCode())) {
-                // 上车
-                p.upBus(bus);
-                pSet.add(p.getPassengerCode());
-                upPassengers.add(p);
+        lock.lock();
+        try {
+            Set<String> pSet = new HashSet<>();
+            for (Passenger p : passengers) {
+                if (p.getRouteCode().equals(bus.getRouteCode())) {
+                    // 上车
+                    p.upBus(bus);
+                    pSet.add(p.getPassengerCode());
+                    upPassengers.add(p);
+                }
+                if (bus.getPassengerMap().size() >= BusConstant.CAPACITY) {
+                    break;
+                }
             }
-            if (bus.getPassengerMap().size() >= BusConstant.CAPACITY){
-                break;
-            }
+            passengers.removeIf(next -> pSet.contains(next.getPassengerCode()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            lock.unlock();
         }
-        passengers.removeIf(next -> pSet.contains(next.getPassengerCode()));
         return upPassengers;
     }
 

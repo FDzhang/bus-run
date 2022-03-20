@@ -1,5 +1,6 @@
 package com.example.busrun.demo;
 
+import cn.hutool.core.util.RandomUtil;
 import com.example.busrun.demo.constant.BusConstant;
 import com.example.busrun.demo.entity.*;
 import com.example.busrun.demo.service.BusService;
@@ -55,7 +56,7 @@ public class DemoApplication {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            clock.getTime().getAndAdd(60);
+            clock.getTime().getAndIncrement();
         }
         //终止线程池
         executor.shutdown();
@@ -69,18 +70,22 @@ public class DemoApplication {
         System.err.println(System.nanoTime() - now);
 
 
-        for (Bus bus : busList) {
-            bus.printRunLog();
-        }
         System.err.println("公交车(NAME)\t总载客人数\t总运行时间(分钟)\t总行驶时间(分钟)");
         for (Bus bus : busList) {
             System.err.println(bus.toString());
         }
 
-        System.err.println("站点(code)\t人数");
-        for (BusSite site : busSites.values()) {
-            System.err.println(site.toString());
-        }
+
+//        for (Bus bus : busList) {
+//            bus.printRunLog();
+//        }
+        busList.get(RandomUtil.randomInt(busList.size())).printRunLog();
+        busList.get(RandomUtil.randomInt(busList.size())).printRunLog();
+
+//        System.err.println("站点(code)\t人数");
+//        for (BusSite site : busSites.values()) {
+//            System.err.println(site.toString());
+//        }
 
     }
 
